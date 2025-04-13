@@ -30,7 +30,7 @@ COPY --from=builder /app/index.js ./
 # COPY --from=builder /app/other-files ./ # If you have other necessary files
 
 # Set the environment variable for Puppeteer to find Chromium
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+# ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
 # Expose the port your application listens on (Cloud Run defaults to 8080)
 EXPOSE 8080
