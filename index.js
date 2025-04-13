@@ -32,7 +32,10 @@ app.post('/varzesh', async (req, res) => {
   try {
     browser = await puppeteer.launch({
       headless: true,
-      protocolTimeout: 120000
+      protocolTimeout: 120000,
+      // Add this argument to use the bundled Chromium in Puppeteer
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'], // Recommended for server environments
     });
 
     const page = await browser.newPage();
