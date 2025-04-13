@@ -1,4 +1,4 @@
-// server.js I love Egypt
+// server.js
 import express from 'express';
 import puppeteer from 'puppeteer';
 import cors from 'cors';
@@ -33,7 +33,7 @@ app.post('/varzesh', async (req, res) => {
     browser = await puppeteer.launch({
       headless: true,
       protocolTimeout: 120000,
-      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
+      executablePath: '/usr/bin/google-chrome-stable' // path to Google Chrome
       args: ['--no-sandbox', '--disable-setuid-sandbox'], // Recommended for server environments
     });
 
@@ -47,28 +47,18 @@ app.post('/varzesh', async (req, res) => {
     );
 
     await page.goto(url, { waitUntil: 'networkidle2' });
+    await page.waitForSelector('.table', { timeout: 120000 });
 
-    // Wait for a more specific selector that indicates the table data is loaded
-    await page.waitForSelector('.conductor-archive-page--programs-list > div > div > div.row > div', { timeout: 120000 });
-
-    // Collect table data with updated selectors based on the current website structure (as of April 14, 2025)
+    // Collect table data
     const tableData = await page.evaluate(() => {
-      const programItems = Array.from(document.querySelectorAll('.conductor-archive-page--programs-list > div > div > div.row > div'));
-      return programItems.map(item => {
-        const titleElement = item.querySelector('.conductor-archive-page--program-title a');
-        const timeElement = item.querySelector('.conductor-archive-page--program-time');
-        const durationElement = item.querySelector('.conductor-archive-page--duration');
-        const descriptionElement = item.querySelector('.conductor-archive-page--program-description');
-        const imageElement = item.querySelector('.conductor-archive-page--program-image img');
-
-        return {
-          title: titleElement?.textContent?.trim() || '',
-          description: descriptionElement?.textContent?.trim() || '',
-          time: timeElement?.textContent?.trim() || '',
-          duration: durationElement?.textContent?.trim() || '',
-          imageUrl: imageElement?.src || ''
-        };
-      });
+      const rows = Array.from(document.querySelectorAll('tr.vertical-middle'));
+      return rows.map(row => ({
+        title: row.querySelector('h5.titlecls')?.textContent?.trim() || '',
+        description: row.querySelector('span.extracls')?.textContent?.trim() || '',
+        time: row.querySelector('td.vertical-middle > div')?.textContent?.trim() || '',
+        duration: row.querySelector('.conductor-archive-page--duration div')?.textContent?.trim() || '',
+        imageUrl: row.querySelector('td.program-image img')?.src || ''
+      }));
     });
 
     // Generate dynamic time-related data

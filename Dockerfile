@@ -1,43 +1,36 @@
-# syntax=docker/dockerfile:1
+# Use the official Node.js image as the base image
+FROM node:18-slim
 
-ARG NODE_VERSION=18.18.0
-
-FROM node:${NODE_VERSION}-alpine
-
-# Use production node environment by default.
-ENV NODE_ENV production
-
+# Set the working directory
 WORKDIR /usr/src/app
 
-# Download dependencies
+# We don't need the standalone Chromium
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
+
+# Install Google Chrome Stable and fonts
+# Note: this installs the necessary libs to make the browser work with Puppeteer.
+RUN apt-get update && apt-get install gnupg wget -y && \
+    wget --quiet --output-document=- https://dl-ssl.google.com/linux/linux_signing_key.pub | gpg --dearmor > /etc/apt/trusted.gpg.d/google-archive.gpg && \
+    sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' && \
+    apt-get update && \
+    apt-get install google-chrome-stable -y --no-install-recommends && \
+    rm -rf /var/lib/apt/lists/*
+
+# Verify that Chrome is installed at the expected location
+RUN ls -alh /usr/bin/google-chrome-stable && \
+    /usr/bin/google-chrome-stable --version
+
+# Copy package.json and package-lock.json
 COPY package*.json ./
-RUN npm ci --omit=dev
 
-# Install necessary dependencies for Chromium (headless operation) AND multimedia codecs
-RUN apk update && apk add --no-cache chromium \
-    --repository=http://dl-cdn.alpinelinux.org/alpine/v3.18/main \
-    --repository=http://dl-cdn.alpinelinux.org/alpine/v3.18/community \
-    ffmpeg \
-    harfbuzz \
-    freetype \
-    nss \
-    libx11 \
-    libxext \
-    libxi \
-    glib \
-    libstdc++
+# Install app dependencies including Puppeteer
+RUN npm install
 
-# Set the environment variable for Puppeteer to find Chromium
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
-
-# Run the application as a non-root user.
-USER node
-
-# Copy the rest of the source files into the image.
+# Bundle app source code
 COPY . .
 
-# Expose the port that the application listens on.
+# Expose the port on which your app will run
 EXPOSE 8080
 
-# Run the application.
-CMD node index.js
+# Start the application
+CMD ["npm", "start"]
