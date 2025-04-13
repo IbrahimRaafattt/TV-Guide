@@ -24,7 +24,7 @@ RUN apk update && apk add --no-cache chromium \
     libx11 \
     libxext \
     libxi \
-    libglib-2.0 \
+    glib \
     libstdc++
 
 # Set the environment variable for Puppeteer to find Chromium
