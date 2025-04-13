@@ -1,4 +1,4 @@
-// server.js
+// server.js I love Egypt
 import express from 'express';
 import puppeteer from 'puppeteer';
 import cors from 'cors';
