@@ -13,8 +13,18 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 RUN npm ci --omit=dev
 
-# Install necessary dependencies for Chromium (headless operation)
-RUN apk add --no-cache chromium --repository=http://dl-cdn.alpinelinux.org/alpine/v3.19/community
+# Install necessary dependencies for Chromium (headless operation) AND multimedia codecs
+RUN apk add --no-cache chromium \
+    --repository=http://dl-cdn.alpinelinux.org/alpine/v3.19/community \
+    ffmpeg \
+    harfbuzz \
+    freetype \
+    nss \
+    libx11 \
+    libxext \
+    libxi \
+    libglib-2.0 \
+    libstdc++
 
 # Set the environment variable for Puppeteer to find Chromium
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
