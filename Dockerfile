@@ -14,7 +14,8 @@ COPY package*.json ./
 RUN npm ci --omit=dev
 
 # Install necessary dependencies for Chromium (headless operation) AND multimedia codecs
-RUN apk add --no-cache chromium \
+RUN apk update && apk add --no-cache chromium \
+    --repository=http://dl-cdn.alpinelinux.org/alpine/v3.18/main \
     --repository=http://dl-cdn.alpinelinux.org/alpine/v3.18/community \
     ffmpeg \
     harfbuzz \
