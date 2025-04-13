@@ -6,7 +6,7 @@ import cors from 'cors';
 const app = express();
 
 app.use(cors()); // <--- Enable CORS for all routes
-const port = 3000;
+const port = process.env.PORT || 3000; // Use the PORT environment variable, default to 3000 for local development
 
 app.use(express.json());
 
